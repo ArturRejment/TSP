@@ -26,6 +26,11 @@ int Graph::getVertices()
 	return vertices;
 }
 
+int **Graph::getMatrix()
+{
+	return matrix;
+}
+
 int Graph::getEdges()
 {
 	return edges;
@@ -74,7 +79,7 @@ void Graph::createMatrix(string fileName)
 	for (int i = 0; i < vertices; i++)
 		matrix[i] = new int[vertices];
 
-	// Fill matrix with 0
+	// Fill matrix from file
 	for (i = 0; i < vertices; i++)
 		for (j = 0; j < vertices;j++)
 		{
