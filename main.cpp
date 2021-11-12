@@ -2,6 +2,7 @@
 #include<conio.h>
 #include<string>
 #include"Algorithm/bruteForce.cpp"
+#include"Algorithm/branchAndBound.cpp"
 #include"Timer/timer.cpp"
 
 using namespace std;
@@ -13,6 +14,7 @@ int main()
 
 	float time = 0;
 	Timer timer;
+	// auto answer = brute_force(*graph);
 	auto answer = brute_force(*graph);
 	time += timer.getTime().count() * 1.0f;
 
