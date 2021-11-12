@@ -31,6 +31,16 @@ void performBruteForce()
 	return;
 }
 
+void performHeldKarp()
+{
+	float time = 0;
+	Timer timer;
+	// held karp
+	time += timer.getTime().count() * 1.0f;
+
+	return;
+}
+
 void menu()
 {
 	system("cls");
@@ -55,6 +65,7 @@ void menu()
 			performBruteForce();
 			break;
 		case '3':
+			performHeldKarp();
 			break;
 		case '4':
 			return;
