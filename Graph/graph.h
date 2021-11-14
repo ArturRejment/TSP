@@ -19,5 +19,6 @@ class Graph
 		void importFromFile();
 		void createMatrix(string);
 		void addEdge(int, int, int);
+		int getPathWeight(int, int);
 };
 

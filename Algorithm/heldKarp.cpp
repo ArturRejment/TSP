@@ -1,12 +1,13 @@
 #include<vector>
-#include"../Graph/graph.h"
+
+const int INT_MAX = 99999999;
 
 using namespace std;
 
 int heldKarp(Graph *graph)
 {
-    int numberOfVertices = graph->getNumOfVertexes();
-    int numberOfCombinations = 1<<numOfVer;
+    int numberOfVertices = graph->getVertices();
+    int numberOfCombinations = 1<<numberOfVertices;
 
 	vector<vector<int>> path(numberOfCombinations, vector<int>(numberOfVertices, INT_MAX));
 
@@ -22,14 +23,14 @@ int heldKarp(Graph *graph)
             //try all possibilities, choose the paths among them
             if(visited == shift){
                 //previous vertex must have been numOfVer-1
-                path[visited][last] = graph->findElement(numberOfVertices - 1, last);
+                path[visited][last] = graph->getPathWeight(numberOfVertices - 1, last);
             } else {
                 //previous vertex must have been one of the other
                 int prev_visited = visited ^ shift;
                 for (int prev = 0; prev < numberOfVertices - 1; ++prev) {
                     if (!(prev_visited & 1<<prev)) continue;
 
-                    int tempMin = graph->findElement(last, prev) + path[prev_visited][prev];
+                    int tempMin = graph->getPathWeight(last, prev) + path[prev_visited][prev];
                     if(tempMin < path[visited][last]){
                         path[visited][last] = tempMin;
                     }
@@ -43,7 +44,7 @@ int heldKarp(Graph *graph)
     int answer = INT_MAX;
     for(int last = 0; last < numberOfVertices - 1; ++last)
     {
-        int tempMin = graph->findElement(last, numberOfVertices - 1) + path[(1<<(numberOfVertices-1))-1][last];
+        int tempMin = graph->getPathWeight(last, numberOfVertices - 1) + path[(1<<(numberOfVertices-1))-1][last];
 
         if(tempMin < answer){
             answer = tempMin;

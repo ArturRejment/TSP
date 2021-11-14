@@ -87,3 +87,8 @@ void Graph::createMatrix(string fileName)
 			matrix[i][j] = value;
 		}
 }
+
+int Graph::getPathWeight(int first, int second)
+{
+	return matrix[first][second];
+}
