@@ -27,6 +27,7 @@ void performBruteForce()
 	}
 
 	cout << "Path: " << path << endl;
+	cout << "Optimal path weight: " << graph->getOptimumPath() << endl;
 	cout << "Time: " << time << " s" << endl;
 	return;
 }
@@ -39,6 +40,7 @@ void performHeldKarp()
 	time += timer.getTime().count() * 1.0f;
 
 	cout << "Answer: " << answer << endl;
+	cout << "Expected answer: " << graph->getOptimumPath() << endl;
 	cout << "Time: " << time << " s" << endl;
 	return;
 }

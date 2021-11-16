@@ -1,6 +1,6 @@
 #include<vector>
 
-const int INT_MAX = 99999999;
+const int INT_MAX = 99999;
 
 using namespace std;
 

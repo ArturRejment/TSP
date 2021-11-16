@@ -1,8 +1,14 @@
 #include<iostream>
 #include<vector>
 #include<algorithm>
+#include<iomanip>
 
 using namespace std;
+
+double calculatePRD(int length, int optimum)
+{
+    return double(100 * (length-optimum)/optimum);
+}
 
 vector<int> brute_force(Graph graph)
 {
@@ -15,6 +21,7 @@ vector<int> brute_force(Graph graph)
 	{
 		all_nodes.push_back(i);
 	}
+
 	int size = all_nodes.size();
 	vector<int> result;
 	int TSP_shortest_path = 9999999;
@@ -28,6 +35,8 @@ vector<int> brute_force(Graph graph)
             j = all_nodes[i];
         }
         path_weight += matrix[j][starting_vertex];
+
+        // Found new shortest path
         if (path_weight < TSP_shortest_path)
         {
             TSP_shortest_path = path_weight;
@@ -37,9 +46,14 @@ vector<int> brute_force(Graph graph)
             {
                 result.push_back(all_nodes[i]);
             }
+
+            cout << "New Best Path Found! PRD: " << calculatePRD(TSP_shortest_path, graph.getOptimumPath()) << endl;
         }
     } while (next_permutation(all_nodes.begin(), all_nodes.end()));
     result.push_back(starting_vertex);
     result.push_back(TSP_shortest_path);
+
+    all_nodes.clear();
+
     return result;
 }

@@ -4,6 +4,7 @@ using namespace std;
 class Graph
 {
 	protected:
+		int optimum;
 		int vertices;
 		int edges;
 		int **matrix;
@@ -12,8 +13,8 @@ class Graph
 		Graph();
 		~Graph();
 		int getVertices();
-		int getEdges();
 		int **getMatrix();
+		int getOptimumPath();
 
 		void printMatrix();
 		void importFromFile();

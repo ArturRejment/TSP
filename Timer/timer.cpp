@@ -10,10 +10,7 @@ struct Timer
         start = std::chrono::high_resolution_clock::now();
     }
 
-    ~Timer()
-    {
-        //std::cout << "Timer took " << duration.count() * 1000.0f << " ms\n";
-    }
+    ~Timer() {}
 
     std::chrono::duration<float> getTime()
     {

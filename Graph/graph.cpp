@@ -8,7 +8,7 @@ using namespace std;
 Graph::Graph()
 {
 	vertices = 0;
-	edges = 0;
+	optimum = 0;
 	matrix = nullptr;
 }
 
@@ -26,21 +26,21 @@ int Graph::getVertices()
 	return vertices;
 }
 
+int Graph::getOptimumPath()
+{
+	return optimum;
+}
+
 int **Graph::getMatrix()
 {
 	return matrix;
-}
-
-int Graph::getEdges()
-{
-	return edges;
 }
 
 void Graph::printMatrix()
 {
 	int i, j;
 	cout << "      |";
-	for (i = 0; i < edges;i++)
+	for (i = 0; i < vertices; i++)
 		cout << setw(6) << i;
 	cout << "\n   ---|";
     for (int i = 0; i < vertices * 6 + 2; i++)
@@ -63,6 +63,7 @@ void Graph::createMatrix(string fileName)
 	if(matrix != nullptr)
 	{
 		cout << "Graph is not empty!\n";
+		return;
 	}
 
 	fstream file;
@@ -71,10 +72,11 @@ void Graph::createMatrix(string fileName)
 	if (!file.is_open())
 	{
 		cout << "Could not open " << fileName;
+		return;
 	}
 
 	file >> name;
-	file >> vertices;
+	file >> this->vertices;
 	matrix = new int *[vertices];
 	for (int i = 0; i < vertices; i++)
 		matrix[i] = new int[vertices];
@@ -86,6 +88,9 @@ void Graph::createMatrix(string fileName)
 			file >> value;
 			matrix[i][j] = value;
 		}
+	file >> optimum;
+	cout << "Graph filled correctly! :)" << endl;
+	file.close();
 }
 
 int Graph::getPathWeight(int first, int second)
