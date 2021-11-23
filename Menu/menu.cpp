@@ -28,7 +28,7 @@ void performBruteForce()
 
 	cout << "Path: " << path << endl;
 	cout << "Optimal path weight: " << graph->getOptimumPath() << endl;
-	cout << "Time: " << time << " s" << endl;
+	cout << "Time: " << time << " s\n\n";
 	return;
 }
 
@@ -41,12 +41,13 @@ void performHeldKarp()
 
 	cout << "Answer: " << answer << endl;
 	cout << "Expected answer: " << graph->getOptimumPath() << endl;
-	cout << "Time: " << time << " s" << endl;
+	cout << "Time: " << time << " s\n\n";
 	return;
 }
 
 void menu()
 {
+
 	system("cls");
 	do
 	{
@@ -65,7 +66,6 @@ void menu()
 			cout << "Enter filename: " << flush;
 			cin >> name;
 			graph->createMatrix("instances/" + name);
-			graph->printMatrix();
 			break;
 		case '2':
 			system("cls");
@@ -74,15 +74,22 @@ void menu()
 		case '3':
 			system("cls");
 			performBruteForce();
+			cout << "Press any key to continue...\n";
+			choice = getch();
+			return;
 			break;
 		case '4':
 			system("cls");
 			performHeldKarp();
+			cout << "Press any key to continue...\n";
+			choice = getch();
+			return;
 			break;
 		case '5':
 			return;
 			break;
 		}
+
 
 	} while (true);
 }

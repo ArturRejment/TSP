@@ -97,3 +97,10 @@ int Graph::getPathWeight(int first, int second)
 {
 	return matrix[first][second];
 }
+
+bool Graph::isEmpty()
+{
+	if(matrix == nullptr)
+		return true;
+	return false;
+}

@@ -3,6 +3,8 @@
 #include<algorithm>
 #include<iomanip>
 
+const int MAXVALUE = 2147483647; // Const represents infinity
+
 using namespace std;
 
 double calculatePRD(int length, int optimum)
@@ -13,18 +15,19 @@ double calculatePRD(int length, int optimum)
 vector<int> brute_force(Graph graph)
 {
 	int starting_vertex = 0;
-	vector<int> all_nodes;
 	int number_of_nodes = graph.getVertices();
 	int **matrix = graph.getMatrix();
 
+	vector<int> all_nodes;
 	for (int i = 1; i < number_of_nodes; i++)
 	{
 		all_nodes.push_back(i);
 	}
 
 	int size = all_nodes.size();
+
 	vector<int> result;
-	int TSP_shortest_path = 9999999;
+	int TSP_shortest_path = MAXVALUE;
 	do
     {
         int path_weight = 0;
@@ -47,7 +50,7 @@ vector<int> brute_force(Graph graph)
                 result.push_back(all_nodes[i]);
             }
 
-            cout << "New Best Path Found! PRD: " << calculatePRD(TSP_shortest_path, graph.getOptimumPath()) << endl;
+            cout << "New Best Path Found! " << TSP_shortest_path << "    PRD: " << calculatePRD(TSP_shortest_path, graph.getOptimumPath()) << " %\n";
         }
     } while (next_permutation(all_nodes.begin(), all_nodes.end()));
     result.push_back(starting_vertex);
