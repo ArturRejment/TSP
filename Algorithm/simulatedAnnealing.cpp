@@ -1,8 +1,26 @@
 #include<iostream>
 #include<vector>
 #include"../Graph/graph.cpp"
+#include"utils.cpp"
 
 using namespace std;
+
+
+int countCostOfPermutation(Graph *graph, vector<int> permutation, int numberOfVertices)
+{
+	int i;
+	int costOfPermutation = 0;
+	int permutationSize = permutation.size();
+
+	costOfPermutation += graph->getPathWeight(0, permutation[0]);
+	for (i = 0; i < numberOfVertices - 2; i++)
+	{
+		costOfPermutation += graph->getPathWeight(permutation[i], permutation[i + 1]);
+	}
+	costOfPermutation += graph->getPathWeight(permutation[permutationSize - 1], 0);
+
+	return cost;
+}
 
 
 vector<int> findStartingPermutation(Graph *graph, int numberOfVertices)
@@ -45,14 +63,45 @@ vector<int> findStartingPermutation(Graph *graph, int numberOfVertices)
 }
 
 
-double findStartingTemperature(Graph *graph)
+double findStartingTemperature(Graph *graph, int numberOfVertices)
 {
+	int i;
+	int bestCost = 0, tempCost;
+	int costOfStarting, costOfSwaped;
+
 	// Vectors with initial permutation
-	vector<int> startingPermutation, vector<int> previousPermutation = findStartingPermutation(graph);
+	vector<int> startingPermutation, vector<int> swapedPermutation = findStartingPermutation(graph);
+
+	startingPermutation = swapRandomElements(startingPermutation);
+	for (i = 0; i < numberOfVertices; i++)
+	{
+		swapedPermutation = swapRandomElements(previousPermutation);
+		costOfStarting = countCostOfPermutation(graph, startingPermutation, numberOfVertices);
+		costOfSwaped = countCostOfPermutation(graph, previousPermutation, numberOfVertices);
+
+		tempCost = abs(costOfStarting - costOfSwaped);
+		if(tempCost > bestCost)
+		{
+			bestCost = tempCost;
+		}
+		startingPermutation = swapedPermutation;
+	}
+
+	return bestCost;
 }
 
 
 pair<vector<int>, int> simmulatedAnnealing(Graph *graph)
 {
+	random_device rd;
+	mt19937 g(rd());
 
+	int numberOfVertices = graph->getVertices();
+	vector<int> permutation = findStartingPermutation(graph, numberOfVertices);
+	vector<int> bestPermutation = permutation;
+
+	int cost = countCostOfPermutation(graph, bestPermutation, numberOfVertices);
+	int previousCost, bestCost = cost;
+
+	double startingTemperature = findStartingTemperature(graph, numberOfVertices);
 }
