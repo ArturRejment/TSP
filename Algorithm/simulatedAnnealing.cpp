@@ -1,6 +1,8 @@
 #include<iostream>
 #include<vector>
-#include"../Graph/graph.cpp"
+#include<cmath>
+#include<random>
+#include<numeric>
 #include"utils.cpp"
 
 using namespace std;
@@ -19,7 +21,7 @@ int countCostOfPermutation(Graph *graph, vector<int> permutation, int numberOfVe
 	}
 	costOfPermutation += graph->getPathWeight(permutation[permutationSize - 1], 0);
 
-	return cost;
+	return costOfPermutation;
 }
 
 
@@ -32,28 +34,34 @@ vector<int> findStartingPermutation(Graph *graph, int numberOfVertices)
 	// Fill vector with availabe vertices with numbers starting from 1 to numberOfVertices-1
 	iota(availableVertices.begin(), availableVertices.end(), 1);
 
+	previousVertex = 0;
 	for (outer = 0; outer < numberOfVertices - 1; outer++)
 	{
 		minimumVertex = 0;
-		minimalCost = 9999999;
+		minimalCost = 99999999;
 		for (inner = 0; inner < availableVertices.size(); inner++)
 		{
 			tempVertex = availableVertices[inner];
-			if(graph->getPathWeight(previousVertex, tempVertex) < minimalCost && previousVertex != tempVertex)
+			if (graph->getPathWeight(previousVertex, tempVertex) < minimalCost && previousVertex != tempVertex)
 			{
+				minimalCost = graph->getPathWeight(previousVertex, tempVertex);
 				minimumVertex = tempVertex;
-				minimalCost = graph->getPathWeight(previousVertex, minimumVertex);
 			}
 		}
 		// Append vertex with minimum path to the starting permutation's vector
 		startingPermutation.push_back(minimumVertex);
 
 		// Erase appended minimum vertex from vector with still available vertices
-		for (i = 0; i < availableVertices.size() - 1; i++)
+		vector<int>::iterator it = availableVertices.begin();
+		while (it != availableVertices.end())
 		{
-			if(availableVertices[i] == minimumVertex)
+			if ((*it) == minimumVertex)
 			{
-				availableVertices.erase(availableVertices.begin() + i);
+				it = availableVertices.erase(it);
+			}
+			else
+			{
+				it++;
 			}
 		}
 		previousVertex = minimumVertex;
@@ -63,30 +71,30 @@ vector<int> findStartingPermutation(Graph *graph, int numberOfVertices)
 }
 
 
-double findStartingTemperature(Graph *graph, int numberOfVertices)
+double findStartingTemperature(Graph *graph, int numberOfVertices, mt19937 g)
 {
 	int i;
 	int bestCost = 0, tempCost;
 	int costOfStarting, costOfSwaped;
 
 	// Vectors with initial permutation
-	vector<int> startingPermutation, vector<int> swapedPermutation = findStartingPermutation(graph);
+	vector<int> startingPermutation = findStartingPermutation(graph, numberOfVertices);
+	vector<int> swapedPermutation = startingPermutation;
 
-	startingPermutation = swapRandomElements(startingPermutation);
+	shuffle(swapedPermutation.begin(), swapedPermutation.end(), g);
 	for (i = 0; i < numberOfVertices; i++)
 	{
-		swapedPermutation = swapRandomElements(previousPermutation);
+		shuffle(startingPermutation.begin(), startingPermutation.end(), g);
 		costOfStarting = countCostOfPermutation(graph, startingPermutation, numberOfVertices);
-		costOfSwaped = countCostOfPermutation(graph, previousPermutation, numberOfVertices);
+		costOfSwaped = countCostOfPermutation(graph, swapedPermutation, numberOfVertices);
 
-		tempCost = abs(costOfStarting - costOfSwaped);
+		tempCost = abs(costOfSwaped - costOfStarting);
 		if(tempCost > bestCost)
 		{
 			bestCost = tempCost;
 		}
-		startingPermutation = swapedPermutation;
+		swapedPermutation = startingPermutation;
 	}
-
 	return bestCost;
 }
 
@@ -95,13 +103,74 @@ pair<vector<int>, int> simmulatedAnnealing(Graph *graph)
 {
 	random_device rd;
 	mt19937 g(rd());
+	srand(time(NULL));
 
+	int i;
 	int numberOfVertices = graph->getVertices();
+	int numberOfIterations;
+	int numberOfSameCostIterations;
 	vector<int> permutation = findStartingPermutation(graph, numberOfVertices);
 	vector<int> bestPermutation = permutation;
+	vector<int> newPermutation = permutation;
 
 	int cost = countCostOfPermutation(graph, bestPermutation, numberOfVertices);
-	int previousCost, bestCost = cost;
+	int previousCost = cost; // for count nuber of same iterations
+	int bestCost = cost;  // Best of all time
+	int previousBestCost = 999999;  // Only for display newBestFound
+	int newCost = cost;  // New cost of new permutation
+	int era = 10 * numberOfVertices;
+	double alpha = 0.999;
 
-	double startingTemperature = findStartingTemperature(graph, numberOfVertices);
+	double startingTemperature = findStartingTemperature(graph, numberOfVertices, g);
+	double currentTemperature = startingTemperature;
+
+	cout << "Starting temperature: " << startingTemperature << endl;
+
+	numberOfIterations = 0;
+	numberOfSameCostIterations = 0;
+
+	while(numberOfSameCostIterations < 70 && currentTemperature > 0.00001)
+	{
+		if(previousCost == cost)
+			numberOfSameCostIterations += 1;
+		else
+			numberOfSameCostIterations = 0;
+
+		previousCost = cost;
+
+		if (previousBestCost != bestCost)
+			printFoundNewBest(numberOfIterations, bestCost, graph);
+
+		for (i = 0; i < era; i++)
+		{
+			newPermutation = swapRandomElements(permutation);
+			newCost = countCostOfPermutation(graph, newPermutation, numberOfVertices);
+
+			if(newCost < cost)
+			{
+				permutation = newPermutation;
+				cost = newCost;
+			}
+			else
+			{
+				uniform_real_distribution<> dis(0, 1);
+				float s = dis(g);
+				if(s < exp(-1 * (newCost - cost) / currentTemperature))
+				{
+					permutation = newPermutation;
+					cost = newCost;
+				}
+			}
+		}
+		currentTemperature = startingTemperature * pow(alpha, ++numberOfIterations);
+		previousBestCost = bestCost;
+		if (cost < bestCost)
+		{
+			bestCost = cost;
+			bestPermutation = permutation;
+		}
+	}
+	bestPermutation.insert(bestPermutation.begin(), 0);
+	bestPermutation.push_back(0);
+	return make_pair(bestPermutation, bestCost);
 }
