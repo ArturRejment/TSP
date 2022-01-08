@@ -5,6 +5,7 @@
 #include"../Algorithm/bruteForce.cpp"
 #include"../Algorithm/heldKarp.cpp"
 #include"../Algorithm/simulatedAnnealing.cpp"
+#include "../Algorithm/geneticAlgorithm.cpp"
 
 using namespace std;
 
@@ -66,6 +67,26 @@ void performSimmulatedAnnealing()
 	cout << "Time: " << time << endl;
 }
 
+void performGeneticAlgorithm()
+{
+    float time = 0;
+    pair<vector<int>, int> answer;
+
+    Timer timer;
+    answer = geneticAlgorithm(graph);
+    time += timer.getTime().count() * 1.0f;
+
+    double prd = double (100 * (answer.second - graph->getOptimumPath())) / graph->getOptimumPath();
+
+    cout << "Weight: " << answer.second << endl;
+    cout << "Optimum Weight: " << graph->getOptimumPath() << endl;
+    cout << fixed << setprecision(4) << "Mistake: " << prd << "%" << endl;
+    cout << "Path: ";
+    for(int i = 0; i < answer.first.size() - 1; i++)
+        cout << answer.first[i] << " " << flush;
+    cout << "\nTime: " << time << endl;
+}
+
 void menu()
 {
 
@@ -77,6 +98,7 @@ void menu()
 		cout << "[3] Brute Force Algorithm\n";
 		cout << "[4] Held-Karp Algorithm\n";
 		cout << "[5] Simmulated Annealing\n";
+		cout << "[6] Genetic Algorithm\n";
 		cout << "[9] Exit\n";
 
 		char choice = getch();
@@ -114,6 +136,12 @@ void menu()
 			choice = getch();
 			return;
 			break;
+        case '6':
+            system("cls");
+            performGeneticAlgorithm();
+            cout << "Press any key to continue...\n";
+            return;
+            break;
 		case '9':
 			return;
 			break;

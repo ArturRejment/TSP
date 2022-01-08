@@ -119,7 +119,7 @@ pair<vector<int>, int> simmulatedAnnealing(Graph *graph)
 	int previousBestCost = 999999;  // Only for display newBestFound
 	int newCost = cost;  // New cost of new permutation
 	int era = 10 * numberOfVertices;
-	double alpha = 0.999;
+	double alpha = 0.9999;
 
 	double startingTemperature = findStartingTemperature(graph, numberOfVertices, g);
 	double currentTemperature = startingTemperature;
@@ -129,7 +129,7 @@ pair<vector<int>, int> simmulatedAnnealing(Graph *graph)
 	numberOfIterations = 0;
 	numberOfSameCostIterations = 0;
 
-	while(numberOfSameCostIterations < 70 && currentTemperature > 0.00001)
+	while(numberOfSameCostIterations < 1000 && currentTemperature > 0.00001)
 	{
 		if(previousCost == cost)
 			numberOfSameCostIterations += 1;
