@@ -140,6 +140,7 @@ void menu()
             system("cls");
             performGeneticAlgorithm();
             cout << "Press any key to continue...\n";
+						getch();
             return;
             break;
 		case '9':

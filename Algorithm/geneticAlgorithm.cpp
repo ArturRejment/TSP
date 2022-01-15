@@ -3,14 +3,19 @@
 #include <cmath>
 #include <numeric>
 #include <random>
-#include "utils.cpp"
-#include "../Graph/graph.cpp"
+#include <windows.h>
 
-int countCostOfPermutation(Graph *graph, vector<int> permutation, int numberOfVertices)
+const double crossoverProbability = 0.9;
+const double mutationProbability = 0.3;
+random_device rd;
+mt19937 rng(rd());
+
+int countCostOfPermutation(Graph *graph, vector<int> permutation)
 {
     int i;
     int costOfPermutation = 0;
     int permutationSize = permutation.size();
+    int numberOfVertices = graph->getVertices();
 
     costOfPermutation += graph->getPathWeight(0, permutation[0]);
     for (i = 0; i < numberOfVertices - 2; i++)
@@ -22,83 +27,209 @@ int countCostOfPermutation(Graph *graph, vector<int> permutation, int numberOfVe
     return costOfPermutation;
 }
 
-vector<int> findStartingPermutation(Graph *graph, int numberOfVertices)
-{
-    int inner, outer, i;
-    int previousVertex, minimumVertex, minimalCost, tempVertex;
-    vector<int> startingPermutation;
-    vector<int> availableVertices(numberOfVertices - 1);
-    // Fill vector with availabe vertices with numbers starting from 1 to numberOfVertices-1
-    iota(availableVertices.begin(), availableVertices.end(), 1);
-
-    previousVertex = 0;
-    for (outer = 0; outer < numberOfVertices - 1; outer++)
-    {
-        minimumVertex = 0;
-        minimalCost = 99999999;
-        for (inner = 0; inner < availableVertices.size(); inner++)
-        {
-            tempVertex = availableVertices[inner];
-            if (graph->getPathWeight(previousVertex, tempVertex) < minimalCost && previousVertex != tempVertex)
-            {
-                minimalCost = graph->getPathWeight(previousVertex, tempVertex);
-                minimumVertex = tempVertex;
-            }
-        }
-        // Append vertex with minimum path to the starting permutation's vector
-        startingPermutation.push_back(minimumVertex);
-
-        // Erase appended minimum vertex from vector with still available vertices
-        vector<int>::iterator it = availableVertices.begin();
-        while (it != availableVertices.end())
-        {
-            if ((*it) == minimumVertex)
-            {
-                it = availableVertices.erase(it);
-            }
-            else
-            {
-                it++;
-            }
-        }
-        previousVertex = minimumVertex;
-    }
-
-    return startingPermutation;
-}
 
 vector<int> randomPermutation(int numberOfVertices)
 {
-    vector<int> randomPermutation;
-    vector<int> availableVertices(numberOfVertices - 1);
-    iota(availableVertices.begin(), availableVertices().end(), 1);
-    srand(time(NULL));
-
-    for(int i = i; availableVertices.size() > 0; i++)
-    {
-        int randomPosition = rand() % (availableVertices - 1);
-        randomPermutation.push_back(availableVertices[randomPosition]);
-        availableVertices.erase(availableVertices.begin() + randomPosition);
-    }
+    vector<int> randomPermutation(numberOfVertices - 1);
+    iota(randomPermutation.begin(), randomPermutation.end(), 1);
+    shuffle(randomPermutation.begin(), randomPermutation.end(), rng);
     return randomPermutation;
+}
+
+
+vector<int> selectParentsIndexes(vector<int> chromosomeGrades, int populationSize)
+{
+    /* Function returns vector with indexes of parents chosen to reproduce in next generation */
+
+    int sumOfGrades = 0;
+    vector<int> parentsIndexes(populationSize);
+    // Sum all grades
+    for (int i = 0; i < populationSize; i++)
+    {
+        sumOfGrades += chromosomeGrades[i];
+        chromosomeGrades[i] = sumOfGrades;
+    }
+
+    std::uniform_int_distribution<std::mt19937::result_type> distribution(1, sumOfGrades - 1);
+
+    for (int i = 0; i < populationSize; i++)
+    {
+        int selected = distribution(rng);
+        for (int j = 0; j < populationSize; j++)
+            if(selected < chromosomeGrades[j])
+            {
+                parentsIndexes[i] = j;
+                break;
+            }
+    }
+
+    return parentsIndexes;
+}
+
+
+vector<vector<int>> reproducePopulation(vector<vector<int>> population, vector<int> parentsIndexes)
+{
+    /* Returns new, reproduced population based on old generation and best parents */
+
+    vector<vector<int>> newPopulation;
+    for (int i = 0; i < population.size(); i++)
+        newPopulation.push_back(population[parentsIndexes[i]]);
+
+    return newPopulation;
+}
+
+
+vector<int> gradeChromosomes(Graph *graph, vector<vector<int>> population, int populationSize, int bestChromosomeCost)
+{
+    int minimumGrade = 0, i, chromosomeCost;
+    vector<int> grades;
+
+    for (i = 0; i < populationSize; i++)
+    {
+        chromosomeCost = countCostOfPermutation(graph, population[i]);
+        grades.push_back(bestChromosomeCost - chromosomeCost);
+    }
+
+    // Grades normalization
+    // Find minimum, negative grade
+    for (i = 0; i < populationSize; i++)
+        if(grades[i] < minimumGrade)
+            minimumGrade = grades[i];
+
+    minimumGrade = (minimumGrade * (-1)) + 1;
+    for (i = 0; i < populationSize; i++)
+        grades[i] += minimumGrade;
+
+    return grades;
+}
+
+
+int findInVector(vector<int> vector, int number)
+{
+    for (int i = 0; i < vector.size(); i++)
+        if(vector[i] == number)
+            return i;
+
+    return -1;
+}
+
+
+vector<vector<int>> performCrossover(vector<vector<int>> permutation, std::uniform_real_distribution<double> probability, int numberOfVertices)
+{
+    /* Perform children crossovers */
+
+    int range;
+    vector<int> tempChromosomeA, tempChromosomeB;
+
+    range = permutation.size() / 2;
+
+    for (int i = 0; i < range; i++)
+    {
+        if (probability(rng) <= crossoverProbability)
+        {
+            tempChromosomeA = permutation[i * 2];
+            tempChromosomeB = permutation[i * 2 + 1];
+
+            // Random crossing point
+            std::uniform_int_distribution<std::mt19937::result_type> dist(0, (numberOfVertices - 1));
+            int crossingPoint = dist(rng);
+
+            // Cross chromosomes
+            for (int j = 0; j < crossingPoint; j++)
+            {
+                int position = findInVector(permutation[i * 2], tempChromosomeB[j]);
+                permutation[i * 2][position] = permutation[i * 2][j];
+                permutation[i * 2][j] = tempChromosomeB[j];
+            }
+            for (int j = 0; j < crossingPoint; j++)
+            {
+                int position = findInVector(permutation[i * 2 + 1], tempChromosomeA[j]);
+                permutation[i * 2 + 1][position] = permutation[i * 2 + 1][j];
+                permutation[i * 2 + 1][j] = tempChromosomeA[j];
+            }
+        }
+    }
+
+    return permutation;
+}
+
+vector<int> permutationSwap(vector<int> permutation, int firstIndex, int secondIndex)
+{
+    if(firstIndex != secondIndex) iter_swap(permutation.begin() + firstIndex, permutation.begin() + secondIndex);
+
+    return permutation;
+}
+
+vector<vector<int>> performMutations(vector<vector<int>>population, std::uniform_real_distribution<double> probability){
+    for(int i = 0; i < population.size(); i++){
+        if(probability(rng) <= mutationProbability){
+            vector<int> tempPermutation = population[i];
+            std::uniform_int_distribution<std::mt19937::result_type> popDist(0, tempPermutation.size() - 1);
+            int pointA, pointB;
+            do{
+                pointA = popDist(rng);
+                pointB = popDist(rng);
+            } while (pointA == pointB);
+
+            tempPermutation = permutationSwap(tempPermutation, pointA, pointB);
+            population[i] = tempPermutation;
+        }
+    }
+    return population;
 }
 
 pair<vector<int>, int> geneticAlgorithm(Graph *graph)
 {
     //
-    const int populationSize = 10;
+    const int populationSize = 200;
+    const int numberOfGenerations = 5000;
     //
 
     int numberOfVertices = graph->getVertices();
-    vector<int> startingPermutation = findStartingPermutation(graph, numberOfVertices);
+    vector<int> bestChromosome = findStartingPermutation(graph, numberOfVertices);
+    int bestChromosomeCost = countCostOfPermutation(graph, bestChromosome);
+    vector<int> selectedParentsIndexes;
 
     vector<vector<int>> population;
-    for (vector<int> chromosome: population)
-        chromosome = randomPermutation((numberOfVertices));
+    population.push_back(bestChromosome);
+    for (int i = 1; i < populationSize; i++)
+        population.push_back(randomPermutation(numberOfVertices));
 
     vector<vector<int>> newPopulation;
-    vector<int> chromosomesGrades(0);
+    vector<int> chromosomesGrades = gradeChromosomes(graph, population, populationSize, bestChromosomeCost);
 
-    for (auto item: chromosomesGrades)
-        cout << item << endl;
+    std::uniform_real_distribution<double> probability(0.0, 1.0);
+
+    int bestGrade = -99999999;
+    int bestFromPopulation = 0;
+
+    for (int i = 0; i < numberOfGenerations; i++)
+    {
+        selectedParentsIndexes = selectParentsIndexes(chromosomesGrades, population.size());
+        newPopulation = reproducePopulation(population, selectedParentsIndexes);
+
+        newPopulation = performCrossover(newPopulation, probability, numberOfVertices);
+        newPopulation = performMutations(newPopulation, probability);
+
+        chromosomesGrades = gradeChromosomes(graph, newPopulation, populationSize, bestChromosomeCost);
+
+        population = newPopulation;
+
+        for (int j = 0; j < populationSize; j++)
+        {
+            if (chromosomesGrades[j] > bestGrade)
+            {
+                bestGrade = chromosomesGrades[j];
+                bestFromPopulation = j;
+            }
+        }
+        if (countCostOfPermutation(graph, population[bestFromPopulation]) < bestChromosomeCost)
+        {
+            bestChromosome = population[bestFromPopulation];
+            bestChromosomeCost = countCostOfPermutation(graph, bestChromosome);
+            printFoundNewBest(i, bestChromosomeCost, graph);
+        }
+    }
+
+    return make_pair(bestChromosome, bestChromosomeCost);
 }
