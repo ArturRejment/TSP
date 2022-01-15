@@ -93,9 +93,12 @@ pair<vector<int>, int> geneticAlgorithm(Graph *graph)
     vector<int> startingPermutation = findStartingPermutation(graph, numberOfVertices);
 
     vector<vector<int>> population;
-    for(int i = 0; i < populationSize; i++)
-        population[i] = randomPermutation((numberOfVertices));
+    for (vector<int> chromosome: population)
+        chromosome = randomPermutation((numberOfVertices));
 
     vector<vector<int>> newPopulation;
+    vector<int> chromosomesGrades(0);
 
+    for (auto item: chromosomesGrades)
+        cout << item << endl;
 }
