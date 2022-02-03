@@ -6,7 +6,7 @@
 #include <windows.h>
 
 const double crossoverProbability = 0.9;
-const double mutationProbability = 0.3;
+const double mutationProbability = 0.05;
 random_device rd;
 mt19937 rng(rd());
 
@@ -181,14 +181,15 @@ vector<vector<int>> performMutations(vector<vector<int>>population, std::uniform
 pair<vector<int>, int> geneticAlgorithm(Graph *graph)
 {
     //
-    const int populationSize = 200;
-    const int numberOfGenerations = 5000;
+    const int populationSize = 500;
+    const int numberOfGenerations = 15000;
     //
 
     int numberOfVertices = graph->getVertices();
+    vector<int> selectedParentsIndexes;
+
     vector<int> bestChromosome = findStartingPermutation(graph, numberOfVertices);
     int bestChromosomeCost = countCostOfPermutation(graph, bestChromosome);
-    vector<int> selectedParentsIndexes;
 
     vector<vector<int>> population;
     population.push_back(bestChromosome);
